@@ -101,6 +101,18 @@ app.get('/api', (req, res) => {
     });
 });
 
+app.get("/debug/env", (req, res) => {
+  res.json({
+    PGHOST: process.env.PGHOST,
+    PGPORT: process.env.PGPORT,
+    PGDATABASE: process.env.PGDATABASE,
+    HAS_PGUSER: !!process.env.PGUSER,
+    HAS_PGPASSWORD: !!process.env.PGPASSWORD,
+    HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+  });
+});
+
+
 // Task routes
 app.use('/api/tasks', taskRoutes);
 
@@ -149,6 +161,13 @@ const startServer = async () => {
                 console.error('❌ DB health check error:', e.message);
             }
         }, 10000);
+
+        console.log("PGHOST:", process.env.PGHOST);
+console.log("PGPORT:", process.env.PGPORT);
+console.log("PGDATABASE:", process.env.PGDATABASE);
+console.log("PGUSER:", process.env.PGUSER ? "***set***" : "(missing)");
+console.log("PGPASSWORD:", process.env.PGPASSWORD ? "***set***" : "(missing)");
+console.log("DATABASE_URL:", process.env.DATABASE_URL ? "***set***" : "(missing)");
 
 
     } catch (error) {
