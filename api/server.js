@@ -24,6 +24,15 @@ const PORT = process.env.PORT || 3000;
 //     allowedHeaders: ['Content-Type', 'Authorization']
 // }));
 
+console.log("HAS_DATABASE_URL:", !!process.env.DATABASE_URL);
+console.log("PORT:", process.env.PORT);
+console.log("PGHOST:", process.env.PGHOST);
+console.log("PGPORT:", process.env.PGPORT);
+console.log("PGDATABASE:", process.env.PGDATABASE);
+console.log("PGUSER:", process.env.PGUSER ? "***set***" : "(missing)");
+console.log("PGPASSWORD:", process.env.PGPASSWORD ? "***set***" : "(missing)");
+console.log("DATABASE_URL:", process.env.DATABASE_URL ? "***set***" : "(missing)");
+
 
 // CORS configuration - รองรับทั้ง Local และ Railway
 const corsOptions = {
@@ -162,12 +171,6 @@ const startServer = async () => {
             }
         }, 10000);
 
-        console.log("PGHOST:", process.env.PGHOST);
-console.log("PGPORT:", process.env.PGPORT);
-console.log("PGDATABASE:", process.env.PGDATABASE);
-console.log("PGUSER:", process.env.PGUSER ? "***set***" : "(missing)");
-console.log("PGPASSWORD:", process.env.PGPASSWORD ? "***set***" : "(missing)");
-console.log("DATABASE_URL:", process.env.DATABASE_URL ? "***set***" : "(missing)");
 
 
     } catch (error) {
