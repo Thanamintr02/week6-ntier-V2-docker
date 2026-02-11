@@ -18,11 +18,43 @@ const PORT = process.env.PORT || 3000;
 // ============================================
 
 // CORS - อนุญาต requests จาก Nginx
-app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// app.use(cors({
+//     origin: process.env.CORS_ORIGIN || '*',
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+
+// CORS configuration - รองรับทั้ง Local และ Railway
+const corsOptions = {
+    origin: function (origin, callback) {
+        // อนุญาต requests ที่ไม่มี origin (เช่น mobile apps, curl)
+        // และ origins ที่อนุญาต
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:8080',
+            'https://localhost',
+            /\.railway\.app$/  // อนุญาตทุก subdomain ของ railway.app
+        ];
+        
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (allowed instanceof RegExp) return allowed.test(origin);
+            return allowed === origin;
+        });
+        
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked:', origin);
+            callback(null, true); // อนุญาตทุก origin สำหรับ Lab
+        }
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 
 // Body parser
 app.use(express.json());
@@ -39,7 +71,7 @@ app.use(morgan('combined'));
 app.get('/api/health', async (req, res) => {
     const dbHealth = await healthCheck();
     const healthy = dbHealth.status === 'healthy';
-    
+
     res.status(healthy ? 200 : 503).json({
         status: healthy ? 'healthy' : 'unhealthy',
         timestamp: new Date().toISOString(),
@@ -96,15 +128,29 @@ const startServer = async () => {
             return;
         }
 
+        // Start Server (listen immediately)
         app.listen(PORT, '0.0.0.0', () => {
             console.log('=========================================');
             console.log('🚀 Task Board API Started');
             console.log('=========================================');
             console.log(`📡 Server running on port ${PORT}`);
-            console.log(`🗄️  Database: ${dbHealth.database}`);
             console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
             console.log('=========================================');
         });
+
+        // (optional) log DB health periodically for visibility
+        setInterval(async () => {
+            try {
+                const dbHealth = await healthCheck();
+                if (dbHealth.status !== 'healthy') {
+                    console.error('❌ DB unhealthy:', dbHealth.error);
+                }
+            } catch (e) {
+                console.error('❌ DB health check error:', e.message);
+            }
+        }, 10000);
+
+
     } catch (error) {
         console.error('❌ Failed to start server:', error.message);
         setTimeout(startServer, 5000);
