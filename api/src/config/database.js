@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 // ใน Docker ใช้ชื่อ container แทน localhost
 // Railway ใช้ DATABASE_URL, Docker ใช้ตัวแปรแยก
 const pool = process.env.DATABASE_URL 
-    ? new Pool({
+     ? new Pool({
         connectionString: process.env.DATABASE_URL,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
       })
